@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'distribution'
+    id "org.beryx.jlink" version "2.24.2"
+}
+
+subprojects {
+    group 'org.example.jpms'
+    apply plugin: 'java'
+    repositories {
+        mavenCentral()
+    }
+    test {
+        useJUnitPlatform()
+    }
+}
+group 'org.example.jpms'
+version '1.0.1'
+
+repositories {
+    mavenCentral()
+}
+dependencies {
+    // Lombok (for our Java classes)
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    // Our own dependencies
+    implementation project(':greeting-service')
+    runtimeOnly project(':greeting-provider-fixed')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = "org.example.jpms.hello.App"
+    mainModule = "org.example.jpms.hello.main"
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    customImage {
+        appModules = [
+                'org.example.jpms.hello.main',
+                'org.example.jpms.hello.greeting.service',
+                'org.example.jpms.hello.greeting.provider.fixed']
+    }
+    launcher {
+        name = 'greeting'
+    }
+}
